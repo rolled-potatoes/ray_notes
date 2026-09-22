@@ -16,6 +16,20 @@ Swift/AppKit을 선택했습니다. AppKit의 `NSTextView`는 macOS 창 수명, 
 
 필수 도구는 Xcode Command Line Tools와 `mise`입니다. 의존성 다운로드는 하지 않습니다.
 
+### 스크립트로 설치하기
+
+원하는 위치에 저장소를 복제한 뒤, 그 위치에서 빌드와 사용자 전용 설치를 실행합니다. 아래의 마지막 인수는 체크아웃 폴더 이름이므로, 다른 이름을 선택했다면 이후 명령의 경로도 그에 맞게 바꾸면 됩니다.
+
+```bash
+git clone git@github.com:rolled-potatoes/ray_notes.git ray-notes
+cd ray-notes
+./scripts/build-app.sh
+./scripts/install-local.sh
+open "$HOME/Applications/Ray Notes.app"
+```
+
+`build-app.sh`는 프로젝트 범위에서 `mise exec -- swift build -c release --disable-sandbox`를 실행합니다. `mise` 또는 Xcode Command Line Tools가 없다면 먼저 설치한 뒤 다시 실행하세요. `install-local.sh`는 기존 `~/Applications/Ray Notes.app` 번들이 있으면 그 번들을 새 빌드로 교체하지만, 노트 데이터 폴더나 로그인 항목은 변경하지 않습니다.
+
 ```bash
 cd /Users/goorm/Documents/ChatGPT/ray-notes
 ./scripts/build-app.sh
@@ -30,10 +44,30 @@ open "build/Ray Notes.app"
 ./scripts/install-local.sh
 ```
 
+### AI 에이전트에게 로컬 설정 맡기기
+
+아래 프롬프트를 그대로 복사해 macOS에서 작업하는 AI 에이전트에게 전달할 수 있습니다. 이 프롬프트는 앱을 다시 개발하는 요청이 아니라, 이미 있는 저장소를 안전하게 로컬 설치·등록하는 요청입니다.
+
+```text
+macOS에서 Ray Notes를 로컬로 설정해 주세요.
+
+저장소는 git@github.com:rolled-potatoes/ray_notes.git 입니다. 아직 체크아웃이 없다면 원하는 작업 폴더에 ray-notes라는 이름으로 복제하고, 이미 체크아웃이 있으면 그 폴더를 사용하세요. 기존 폴더나 사용자의 노트 데이터를 삭제하거나 덮어쓰지 마세요.
+
+작업 전 현재 디렉터리, Git 상태, 적용되는 AGENTS.md를 확인하고 지시를 따르세요. 프로젝트 런타임은 mise를 통해 실행하세요. 저장소 안에서 ./scripts/build-app.sh와 필요한 테스트를 실행해 빌드 결과를 확인하세요.
+
+사용자 전용 앱 설치는 ./scripts/install-local.sh로만 수행해 ~/Applications/Ray Notes.app에 설치해도 됩니다. 이 설치는 기존 같은 이름의 앱 번들을 교체할 수 있으므로, 실행 전에 대상 경로를 보고하세요. 로그인 항목, 전역 설정, 노트 데이터 폴더는 바꾸지 마세요.
+
+Raycast 등록은 GUI를 사용할 수 있을 때만 Raycast Script Commands의 Script Folder에 <체크아웃 경로>/raycast/commands를 추가하세요. GUI를 사용할 수 없으면 Raycast에 임의 설정을 쓰지 말고 정확한 수동 등록 단계를 안내하세요. Raycast에는 새 빈 노트, 새 회의 노트, 최근 노트 이어쓰기, 노트 찾기, 노트 ID로 열기 명령이 나타나야 합니다.
+
+설치 뒤 앱 번들을 실행하고 raynotes://new, raynotes://recent, raynotes://search?q=테스트 URL 요청이 성공적으로 앱에 전달되는지 가능한 범위에서 확인하세요. 실제 UI나 Raycast를 실행하지 못했다면 통과로 말하지 말고, 수행한 빌드·테스트와 남은 수동 확인을 구분해 보고하세요.
+
+이 작업에서는 앱 기능을 재구현하거나, 커밋·푸시·PR·배포를 하거나, 전역 시스템 설정을 바꾸지 마세요. 기존 변경 사항과 사용자 데이터를 보존하세요.
+```
+
 ## Raycast 등록
 
 1. Raycast Root Search에서 **Search Script Commands**를 실행합니다. 아직 폴더가 없을 때 보이는 **Add Script Command Folder** 버튼을 누릅니다. Settings의 왼쪽에서 **Script Commands**가 자동 선택됩니다.
-2. **Script Folders** 영역의 `+`를 선택하고 `/Users/goorm/Documents/ChatGPT/ray-notes/raycast/commands`를 등록합니다. 이 흐름은 Raycast의 [Script Commands 안내](https://github.com/raycast/script-commands)와 입력 인수 [공식 안내](https://www.raycast.com/blog/inputs-for-script-commands)를 따릅니다.
+2. **Script Folders** 영역의 `+`를 선택하고 실제 체크아웃의 `raycast/commands` 폴더를 등록합니다. 예를 들어 위 명령대로 복제했다면 `<복제한 위치>/ray-notes/raycast/commands`입니다. 이 흐름은 Raycast의 [Script Commands 안내](https://github.com/raycast/script-commands)와 입력 인수 [공식 안내](https://www.raycast.com/blog/inputs-for-script-commands)를 따릅니다.
 3. Raycast에서 아래 명령을 찾아 원하는 단축키를 각각 지정합니다. 기본 키 조합은 Raycast와 충돌을 피하기 위해 강제하지 않습니다.
 
 | Raycast 명령 | 동작 |
